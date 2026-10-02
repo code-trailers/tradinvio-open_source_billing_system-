@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradInvio - Restaurant Billing System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="logo-icon">🍽️</div>
+        <div>
+          <h1 class="brand-title">TradInvio</h1>
+          <p class="brand-subtitle">Smart Restaurant Point of Sale & Billing</p>
+        </div>
+      </div>
+      <div class="header-meta">
+        <span class="live-clock" id="liveClock">Loading time...</span>
+        <span class="badge-status">● Live POS</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-layout">
+    <!-- Left Column: Menu Section -->
+    <section class="menu-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Menu Catalog</h2>
+          <p class="section-subtitle">Select items to add them directly to the current order</p>
+        </div>
+        <div class="search-wrapper">
+          <input type="text" id="menuSearch" placeholder="Search dish or beverage..." class="search-input">
+        </div>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="category-tabs" id="categoryTabs">
+        <button class="tab-btn active" data-category="all">All Items</button>
+        <button class="tab-btn" data-category="Starters">🥗 Starters</button>
+        <button class="tab-btn" data-category="Main Course">🍛 Main Course</button>
+        <button class="tab-btn" data-category="Beverages">🥤 Beverages</button>
+        <button class="tab-btn" data-category="Desserts">🍰 Desserts</button>
+      </div>
+
+      <!-- Menu Grid -->
+      <div class="menu-grid" id="menuGrid">
+        <!-- Dynamically Populated by script.js -->
+      </div>
+    </section>
+
+    <!-- Right Column: Order & Billing Section -->
+    <section class="order-section">
+      <div class="order-card">
+        <div class="order-header">
+          <h2 class="section-title">Current Order</h2>
+          <button id="resetOrderBtn" class="btn-text-danger" title="Clear current order">Clear All</button>
+        </div>
+
+        <!-- Customer & Table Info -->
+        <div class="customer-inputs">
+          <div class="input-group">
+            <label for="customerName">Customer Name <span class="required">*</span></label>
+            <input type="text" id="customerName" placeholder="e.g. John Doe" autocomplete="off">
+          </div>
+          <div class="input-group">
+            <label for="tableNumber">Table No. <span class="required">*</span></label>
+            <input type="text" id="tableNumber" placeholder="e.g. T-04" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Order Items List -->
+        <div class="order-items-wrapper">
+          <div class="table-header-row">
+            <span>Item</span>
+            <span class="text-center">Qty</span>
+            <span class="text-right">Price</span>
+            <span class="text-right">Total</span>
+            <span class="text-center">Action</span>
+          </div>
+          <div class="order-items-list" id="orderItemsList">
+            <!-- Empty state or list items populated by script.js -->
+          </div>
+        </div>
+
+        <!-- Billing Summary -->
+        <div class="billing-summary">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span id="subtotalVal">₹0.00</span>
+          </div>
+          <div class="summary-row">
+            <span>GST (5%)</span>
+            <span id="gstVal">₹0.00</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row total-row">
+            <span>Grand Total</span>
+            <span id="grandTotalVal">₹0.00</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="order-actions">
+          <button id="generateBillBtn" class="btn btn-primary" disabled>
+            <span>🧾 Generate Bill</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bill Modal / Print Receipt View -->
+  <div class="modal-overlay" id="billModal">
+    <div class="modal-card">
+      <div class="modal-toolbar no-print">
+        <button id="printBillBtn" class="btn btn-primary">
+          <span>🖨️ Print Bill</span>
+        </button>
+        <button id="closeModalBtn" class="btn btn-secondary">
+          <span>✕ Close</span>
+        </button>
+      </div>
+
+      <!-- Printable Receipt -->
+      <div class="receipt-container" id="printableReceipt">
+        <div class="receipt-header">
+          <div class="receipt-logo">🍽️ TradInvio</div>
+          <p class="receipt-tagline">Fine Dining & Culinary Delights</p>
+          <p class="receipt-contact">104 Gourmet Avenue, Silicon Hub</p>
+          <p class="receipt-contact">Phone: +91 98765 43210 | GSTIN: 29AAAAA0000A1Z5</p>
+          <div class="receipt-divider-dashed"></div>
+          <div class="receipt-meta">
+            <div>
+              <p><strong>Invoice:</strong> <span id="recInvoiceNo">INV-1001</span></p>
+              <p><strong>Date & Time:</strong> <span id="recDateTime">-</span></p>
+            </div>
+            <div class="text-right">
+              <p><strong>Customer:</strong> <span id="recCustName">-</span></p>
+              <p><strong>Table No:</strong> <span id="recTableNo">-</span></p>
+            </div>
+          </div>
+          <div class="receipt-divider-dashed"></div>
+        </div>
+
+        <table class="receipt-table">
+          <thead>
+            <tr>
+              <th class="text-left">Item</th>
+              <th class="text-center">Qty</th>
+              <th class="text-right">Rate</th>
+              <th class="text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="recItemsBody">
+            <!-- Populated via script.js -->
+          </tbody>
+        </table>
+
+        <div class="receipt-divider-dashed"></div>
+
+        <div class="receipt-totals">
+          <div class="receipt-row">
+            <span>Subtotal:</span>
+            <span id="recSubtotal">₹0.00</span>
+          </div>
+          <div class="receipt-row">
+            <span>CGST (2.5%):</span>
+            <span id="recCgst">₹0.00</span>
+          </div>
+          <div class="receipt-row">
+            <span>SGST (2.5%):</span>
+            <span id="recSgst">₹0.00</span>
+          </div>
+          <div class="receipt-divider-solid"></div>
+          <div class="receipt-row receipt-grand-total">
+            <span>GRAND TOTAL:</span>
+            <span id="recGrandTotal">₹0.00</span>
+          </div>
+        </div>
+
+        <div class="receipt-footer">
+          <div class="receipt-divider-dashed"></div>
+          <p class="thank-you">Thank you for dining with us!</p>
+          <p class="visit-again">Please visit TradInvio again.</p>
+          <div class="barcode-mock">||||| ||||||| |||| |||||| ||||| ||||||||||</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
