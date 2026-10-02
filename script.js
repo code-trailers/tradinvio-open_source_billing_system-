@@ -193,6 +193,8 @@ const categoryTabs = document.getElementById("categoryTabs");
 const menuSearch = document.getElementById("menuSearch");
 const orderItemsList = document.getElementById("orderItemsList");
 const subtotalVal = document.getElementById("subtotalVal");
+const discountInput = document.getElementById("discountInput");
+const discountVal = document.getElementById("discountVal");
 const gstVal = document.getElementById("gstVal");
 const grandTotalVal = document.getElementById("grandTotalVal");
 const generateBillBtn = document.getElementById("generateBillBtn");
@@ -211,6 +213,8 @@ const recCustName = document.getElementById("recCustName");
 const recTableNo = document.getElementById("recTableNo");
 const recItemsBody = document.getElementById("recItemsBody");
 const recSubtotal = document.getElementById("recSubtotal");
+const recDiscountPercent = document.getElementById("recDiscountPercent");
+const recDiscount = document.getElementById("recDiscount");
 const recCgst = document.getElementById("recCgst");
 const recSgst = document.getElementById("recSgst");
 const recGrandTotal = document.getElementById("recGrandTotal");
@@ -331,6 +335,7 @@ function clearOrder() {
     currentOrder = [];
     customerNameInput.value = "";
     tableNumberInput.value = "";
+    if (discountInput) discountInput.value = "0";
     updateOrderUI();
   }
 }
@@ -339,6 +344,8 @@ function clearOrder() {
 // 7. Calculate Totals & Update Order UI
 // ==========================================
 function updateOrderUI() {
+  const discountPercent = discountInput ? Math.min(100, Math.max(0, parseFloat(discountInput.value) || 0)) : 0;
+
   if (currentOrder.length === 0) {
     orderItemsList.innerHTML = `
       <div class="empty-state">
@@ -348,6 +355,7 @@ function updateOrderUI() {
       </div>
     `;
     subtotalVal.textContent = "₹0.00";
+    if (discountVal) discountVal.textContent = "₹0.00";
     gstVal.textContent = "₹0.00";
     grandTotalVal.textContent = "₹0.00";
     generateBillBtn.disabled = true;
@@ -379,10 +387,13 @@ function updateOrderUI() {
 
   // Calculate Totals
   const subtotal = currentOrder.reduce((acc, curr) => acc + curr.price * curr.qty, 0);
-  const gst = subtotal * 0.05; // 5% GST
-  const grandTotal = subtotal + gst;
+  const discountAmount = (subtotal * discountPercent) / 100;
+  const taxableAmount = subtotal - discountAmount;
+  const gst = taxableAmount * 0.05; // 5% GST after discount
+  const grandTotal = taxableAmount + gst;
 
   subtotalVal.textContent = `₹${subtotal.toFixed(2)}`;
+  if (discountVal) discountVal.textContent = `₹${discountAmount.toFixed(2)}`;
   gstVal.textContent = `₹${gst.toFixed(2)}`;
   grandTotalVal.textContent = `₹${grandTotal.toFixed(2)}`;
 
@@ -442,12 +453,17 @@ function generateBill() {
     )
     .join("");
 
+  const discountPercent = discountInput ? Math.min(100, Math.max(0, parseFloat(discountInput.value) || 0)) : 0;
   const subtotal = currentOrder.reduce((acc, curr) => acc + curr.price * curr.qty, 0);
-  const cgst = subtotal * 0.025; // 2.5% CGST
-  const sgst = subtotal * 0.025; // 2.5% SGST
-  const grandTotal = subtotal + cgst + sgst;
+  const discountAmount = (subtotal * discountPercent) / 100;
+  const taxableAmount = subtotal - discountAmount;
+  const cgst = taxableAmount * 0.025; // 2.5% CGST
+  const sgst = taxableAmount * 0.025; // 2.5% SGST
+  const grandTotal = taxableAmount + cgst + sgst;
 
   recSubtotal.textContent = `₹${subtotal.toFixed(2)}`;
+  if (recDiscountPercent) recDiscountPercent.textContent = discountPercent;
+  if (recDiscount) recDiscount.textContent = `₹${discountAmount.toFixed(2)}`;
   recCgst.textContent = `₹${cgst.toFixed(2)}`;
   recSgst.textContent = `₹${sgst.toFixed(2)}`;
   recGrandTotal.textContent = `₹${grandTotal.toFixed(2)}`;
@@ -480,6 +496,10 @@ menuSearch.addEventListener("input", (e) => {
   searchQuery = e.target.value.trim();
   renderMenu();
 });
+
+if (discountInput) {
+  discountInput.addEventListener("input", updateOrderUI);
+}
 
 generateBillBtn.addEventListener("click", generateBill);
 resetOrderBtn.addEventListener("click", clearOrder);
