@@ -97,6 +97,13 @@
             <span id="subtotalVal">₹0.00</span>
           </div>
           <div class="summary-row">
+            <div class="discount-label-group">
+              <label for="discountInput">Discount (%)</label>
+              <input type="number" id="discountInput" min="0" max="100" value="0" class="discount-input" placeholder="0">
+            </div>
+            <span id="discountVal">₹0.00</span>
+          </div>
+          <div class="summary-row">
             <span>GST (5%)</span>
             <span id="gstVal">₹0.00</span>
           </div>
@@ -170,6 +177,10 @@
           <div class="receipt-row">
             <span>Subtotal:</span>
             <span id="recSubtotal">₹0.00</span>
+          </div>
+          <div class="receipt-row">
+            <span>Discount (<span id="recDiscountPercent">0</span>%):</span>
+            <span id="recDiscount">₹0.00</span>
           </div>
           <div class="receipt-row">
             <span>CGST (2.5%):</span>
